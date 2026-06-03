@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA 30-Day Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e10;
+    --surface: #18181c;
+    --surface2: #222228;
+    --border: #2e2e38;
+    --accent: #7c6af7;
+    --accent2: #4fc8a0;
+    --accent3: #f7a84a;
+    --danger: #f76a6a;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --w1: #3b82f6;
+    --w2: #22c55e;
+    --w3: #f59e0b;
+    --w4: #a855f7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 4rem;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .header h1 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .header h1 span { color: var(--accent); }
+
+  .progress-wrap {
+    flex: 1;
+    min-width: 200px;
+  }
+  .progress-bar-bg {
+    background: var(--border);
+    border-radius: 99px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .reset-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* Main */
+  .main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Stats bar */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 2.5rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Week section */
+  .week {
+    margin-bottom: 2.5rem;
+  }
+  .week-title {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  .wk1 { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .wk2 { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .wk3 { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .wk4 { background: rgba(168,85,247,0.15); color: #c084fc; }
+
+  /* Day card */
+  .day-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .day-card.done { border-color: var(--accent2); }
+  .day-card.done .day-header { background: rgba(79,200,160,0.06); }
+
+  .day-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .day-header:hover { background: var(--surface2); }
+
+  .day-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 36px;
+  }
+  .day-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .day-name.done-text { color: var(--accent2); }
+
+  .day-badge {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-easy { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .badge-med { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .badge-rev { background: rgba(168,85,247,0.15); color: #c084fc; }
+  .badge-mock { background: rgba(247,106,106,0.15); color: #f76a6a; }
+
+  .chevron {
+    color: var(--muted);
+    font-size: 16px;
+    transition: transform 0.25s;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .chevron.open { transform: rotate(90deg); }
+
+  /* Topics list */
+  .topics {
+    display: none;
+    padding: 0 18px 16px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .topics.open { display: block; }
+
+  .topic-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .topic-item:last-child { border-bottom: none; }
+
+  .topic-item label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    flex: 1;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .topic-item label.checked-label {
+    color: var(--muted);
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface2);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+    margin-top: 1px;
+  }
+  input[type="checkbox"]:hover { border-color: var(--accent); }
+  input[type="checkbox"]:checked {
+    background: var(--accent2);
+    border-color: var(--accent2);
+  }
+  input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 6px; height: 10px;
+    border: 2px solid #0e0e10;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+
+  .subtopic-tag {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-top: 3px;
+    display: inline-block;
+  }
+
+  /* Day complete banner */
+  .day-complete-pill {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(79,200,160,0.15);
+    color: var(--accent2);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .header { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>DSA <span>30</span> Tracker</h1>
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Overall Progress</span>
+      <span id="pct-label">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="main-bar" style="width:0%"></div>
+    </div>
+  </div>
+  <button class="reset-btn" onclick="resetAll()">Reset All</button>
+</div>
+
+<div class="main">
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-num" id="s-done">0</div>
+      <div class="stat-lbl">Topics Done</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="s-total">0</div>
+      <div class="stat-lbl">Total Topics</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="s-days">0</div>
+      <div class="stat-lbl">Days Complete</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="s-streak">0</div>
+      <div class="stat-lbl">Days Left</div>
+    </div>
+  </div>
+
+  <div id="plan"></div>
+</div>
+
+<script>
+const plan = [
+  { week: 1, wkLabel: "Week 1 — Foundation", wkClass: "wk1", days: [
+    { day: 1, title: "Arrays Basics", badge: "badge-easy", badgeText: "Easy",
+      topics: ["Traversal — loop through array, print elements","Insert element at position","Delete element from array","Reverse an array","Find maximum and minimum element","Prefix sum array concept"] },
+    { day: 2, title: "Arrays — Patterns", badge: "badge-med", badgeText: "Medium",
+      topics: ["Two pointers technique","Sliding window pattern","Kadane's algorithm — maximum subarray sum","Practice: 3 easy problems on LeetCode"] },
+    { day: 3, title: "Strings Basics", badge: "badge-easy", badgeText: "Easy",
+      topics: ["Reverse a string","Check palindrome","Check anagram (two strings)","Find substring in string","Count character frequency"] },
+    { day: 4, title: "Strings — Patterns", badge: "badge-med", badgeText: "Medium",
+      topics: ["String manipulation tricks","Frequency count using hashmap","Pattern matching (naive method)","Practice: 2 easy + 1 medium on LeetCode"] },
+    { day: 5, title: "Math & Number Theory", badge: "badge-easy", badgeText: "Easy",
+      topics: ["GCD and LCM (Euclidean algorithm)","Prime number check","Sieve of Eratosthenes","Modular arithmetic basics","Practice: 3 easy math problems"] },
+    { day: 6, title: "Hashing", badge: "badge-med", badgeText: "Medium",
+      topics: ["HashMap operations (put, get, remove)","HashSet for unique elements","Frequency map pattern","Two Sum problem using hashmap","Practice: 2 easy + 1 medium"] },
+    { day: 7, title: "Week 1 Revision", badge: "badge-rev", badgeText: "Revision",
+      topics: ["Re-solve 1 hard array problem","Re-solve 1 hard string problem","Re-solve 1 hashing problem","Write down patterns you learned this week"] },
+  ]},
+  { week: 2, wkLabel: "Week 2 — Data Structures", wkClass: "wk2", days: [
+    { day: 8, title: "Linked List Basics", badge: "badge-easy", badgeText: "Easy",
+      topics: ["Singly linked list — structure","Insert at head, tail, position","Delete a node","Reverse a linked list","Detect cycle — Floyd's algorithm"] },
+    { day: 9, title: "Linked List — Medium", badge: "badge-med", badgeText: "Medium",
+      topics: ["Merge two sorted linked lists","Find middle node (slow-fast pointer)","Remove nth node from end","Practice: 2 medium problems"] },
+    { day: 10, title: "Stack", badge: "badge-med", badgeText: "Medium",
+      topics: ["Stack using array/list","Push, pop, peek operations","Valid parentheses problem","Next greater element","Min stack (get minimum in O(1))"] },
+    { day: 11, title: "Queue & Deque", badge: "badge-med", badgeText: "Medium",
+      topics: ["Queue using array","Queue using two stacks","Circular queue concept","Deque (double ended queue)","Sliding window maximum using deque"] },
+    { day: 12, title: "Binary Search", badge: "badge-med", badgeText: "Medium",
+      topics: ["Classic binary search on sorted array","First and last occurrence of element","Search in rotated sorted array","Binary search on answer concept","Practice: 2 easy + 2 medium"] },
+    { day: 13, title: "Sorting Algorithms", badge: "badge-easy", badgeText: "Easy",
+      topics: ["Bubble sort — code it","Selection sort — code it","Insertion sort — code it","Merge sort — understand & code","Quick sort — understand & code","Know time complexities of all"] },
+    { day: 14, title: "Week 2 Revision", badge: "badge-rev", badgeText: "Revision",
+      topics: ["Re-solve 1 linked list problem","Re-solve 1 stack/queue problem","Re-solve 1 binary search problem","Attempt 1 timed set on GFG (45 mins)"] },
+  ]},
+  { week: 3, wkLabel: "Week 3 — Trees, Graphs, Recursion", wkClass: "wk3", days: [
+    { day: 15, title: "Recursion & Backtracking", badge: "badge-easy", badgeText: "Easy",
+      topics: ["Factorial using recursion","Fibonacci using recursion","Subset sum problem","Generate all permutations concept","Understand call stack with recursion"] },
+    { day: 16, title: "Binary Tree Basics", badge: "badge-easy", badgeText: "Easy",
+      topics: ["Tree node structure","Inorder traversal (Left Root Right)","Preorder traversal (Root Left Right)","Postorder traversal (Left Right Root)","Height/depth of tree","Level order traversal (BFS)"] },
+    { day: 17, title: "BST", badge: "badge-med", badgeText: "Medium",
+      topics: ["BST search","BST insert","BST delete","Validate if a tree is BST","Lowest common ancestor (LCA)","Practice: 2 easy + 1 medium"] },
+    { day: 18, title: "Graphs — BFS & DFS", badge: "badge-med", badgeText: "Medium",
+      topics: ["Graph representation — adjacency list","Graph representation — adjacency matrix","BFS traversal (queue based)","DFS traversal (recursion/stack based)","Find connected components"] },
+    { day: 19, title: "Graphs — Problems", badge: "badge-med", badgeText: "Medium",
+      topics: ["Cycle detection in undirected graph","Cycle detection in directed graph","Topological sort (DFS method)","Number of islands problem","Practice: 2 medium problems"] },
+    { day: 20, title: "Dynamic Programming Intro", badge: "badge-easy", badgeText: "Easy",
+      topics: ["Understand memoization (top-down)","Understand tabulation (bottom-up)","Fibonacci using DP","Climbing stairs problem","Min cost climbing stairs"] },
+    { day: 21, title: "Week 3 Revision", badge: "badge-rev", badgeText: "Revision",
+      topics: ["Re-solve 1 tree problem","Re-solve 1 graph problem","Re-solve 1 DP problem","Do 1 timed practice session (45 mins)"] },
+  ]},
+  { week: 4, wkLabel: "Week 4 — DP, Heaps & Final Prep", wkClass: "wk4", days: [
+    { day: 22, title: "DP — 1D Problems", badge: "badge-med", badgeText: "Medium",
+      topics: ["House robber problem","Coin change — minimum coins","Coin change — number of ways","Decode ways problem","Practice: 3 medium problems"] },
+    { day: 23, title: "DP — 2D Problems", badge: "badge-med", badgeText: "Medium",
+      topics: ["0/1 Knapsack problem","Longest common subsequence (LCS)","Unique paths in grid","Edit distance concept","Practice: 2 medium problems"] },
+    { day: 24, title: "Heaps & Priority Queue", badge: "badge-med", badgeText: "Medium",
+      topics: ["Min heap and max heap concept","heapq in Python / PriorityQueue in Java","K largest elements","K smallest elements","Merge K sorted lists"] },
+    { day: 25, title: "Mixed Practice", badge: "badge-med", badgeText: "Mixed",
+      topics: ["Solve 5 random problems (timed — 10 min each)","Cover: 1 array, 1 string, 1 tree, 1 graph, 1 DP","Focus on writing clean code fast","Note down any pattern you missed"] },
+    { day: 26, title: "TCS NQT Mock Test 1", badge: "badge-mock", badgeText: "Mock",
+      topics: ["Study TCS NQT exam pattern (3 sections)","Attempt full mock on PrepInsta.com","Time yourself strictly","Note weak areas after test"] },
+    { day: 27, title: "Fix Weak Areas", badge: "badge-rev", badgeText: "Revision",
+      topics: ["Review all wrong answers from mock test","Re-study top 2 weak topics","Solve 3 targeted problems on weak topics","Review time complexity cheat sheet"] },
+    { day: 28, title: "TCS NQT Mock Test 2", badge: "badge-mock", badgeText: "Mock",
+      topics: ["Attempt second full TCS NQT mock","Focus on time management this time","Try to improve score from test 1","Review mistakes after"] },
+    { day: 29, title: "Final Revision", badge: "badge-rev", badgeText: "Revision",
+      topics: ["Revise all topic notes in one pass","Check all common patterns: two pointer, sliding window, BFS/DFS, DP","Review edge cases — empty array, single element, negatives","Quick-fire: solve 5 easy problems in 30 mins"] },
+    { day: 30, title: "Rest & Confidence", badge: "badge-rev", badgeText: "Ready!",
+      topics: ["Light review of your own notes only","No new problems today","Eat well, sleep 8 hours","You are ready. Trust your 30 days of work."] },
+  ]},
+];
+
+function getKey(day, topicIdx) { return `day${day}_t${topicIdx}`; }
+function getDayKey(day) { return `day${day}_done`; }
+
+function loadChecked() {
+  const result = {};
+  for (let key in localStorage) { result[key] = localStorage.getItem(key) === '1'; }
+  return result;
+}
+
+function saveCheck(key, val) { localStorage.setItem(key, val ? '1' : '0'); }
+
+function updateStats() {
+  let totalTopics = 0, doneTopics = 0, doneDays = 0;
+  plan.forEach(week => {
+    week.days.forEach(day => {
+      const n = day.topics.length;
+      totalTopics += n;
+      let dayDone = 0;
+      day.topics.forEach((_, i) => {
+        if (localStorage.getItem(getKey(day.day, i)) === '1') { doneTopics++; dayDone++; }
+      });
+      if (dayDone === n) doneDays++;
+    });
+  });
+  const pct = totalTopics > 0 ? Math.round(doneTopics / totalTopics * 100) : 0;
+  document.getElementById('s-done').textContent = doneTopics;
+  document.getElementById('s-total').textContent = totalTopics;
+  document.getElementById('s-days').textContent = doneDays;
+  document.getElementById('s-streak').textContent = 30 - doneDays;
+  document.getElementById('main-bar').style.width = pct + '%';
+  document.getElementById('pct-label').textContent = pct + '%';
+}
+
+function buildPlan() {
+  const container = document.getElementById('plan');
+  container.innerHTML = '';
+
+  plan.forEach(week => {
+    const wDiv = document.createElement('div');
+    wDiv.className = 'week';
+
+    const wTitle = document.createElement('div');
+    wTitle.className = `week-title ${week.wkClass}`;
+    wTitle.textContent = week.wkLabel;
+    wDiv.appendChild(wTitle);
+
+    week.days.forEach(day => {
+      const totalT = day.topics.length;
+      const doneT = day.topics.filter((_, i) => localStorage.getItem(getKey(day.day, i)) === '1').length;
+      const allDone = doneT === totalT;
+
+      const card = document.createElement('div');
+      card.className = 'day-card' + (allDone ? ' done' : '');
+      card.id = `card-day-${day.day}`;
+
+      const header = document.createElement('div');
+      header.className = 'day-header';
+      header.innerHTML = `
+        <span class="day-num">Day ${day.day}</span>
+        <span class="day-name${allDone ? ' done-text' : ''}" id="dn-${day.day}">${day.title}</span>
+        ${allDone ? `<span class="day-complete-pill">✓ Complete</span>` : `<span class="day-badge ${day.badge}">${day.badgeText}</span>`}
+        <span class="chevron" id="chev-${day.day}">›</span>
+      `;
+
+      const topics = document.createElement('div');
+      topics.className = 'topics';
+      topics.id = `topics-${day.day}`;
+
+      day.topics.forEach((topic, i) => {
+        const key = getKey(day.day, i);
+        const checked = localStorage.getItem(key) === '1';
+        const item = document.createElement('div');
+        item.className = 'topic-item';
+        item.innerHTML = `
+          <label class="${checked ? 'checked-label' : ''}" id="lbl-${day.day}-${i}">
+            <input type="checkbox" id="chk-${day.day}-${i}" ${checked ? 'checked' : ''} />
+            ${topic}
+          </label>
+        `;
+        const cb = item.querySelector('input');
+        cb.addEventListener('change', function() {
+          saveCheck(key, this.checked);
+          const lbl = document.getElementById(`lbl-${day.day}-${i}`);
+          lbl.className = this.checked ? 'checked-label' : '';
+          refreshDay(day.day, week, day);
+          updateStats();
+        });
+        topics.appendChild(item);
+      });
+
+      header.addEventListener('click', () => {
+        const t = document.getElementById(`topics-${day.day}`);
+        const c = document.getElementById(`chev-${day.day}`);
+        t.classList.toggle('open');
+        c.classList.toggle('open');
+      });
+
+      card.appendChild(header);
+      card.appendChild(topics);
+      wDiv.appendChild(card);
+    });
+
+    container.appendChild(wDiv);
+  });
+
+  updateStats();
+}
+
+function refreshDay(dayNum, week, day) {
+  const totalT = day.topics.length;
+  const doneT = day.topics.filter((_, i) => localStorage.getItem(getKey(dayNum, i)) === '1').length;
+  const allDone = doneT === totalT;
+  const card = document.getElementById(`card-day-${dayNum}`);
+  if (!card) return;
+  card.className = 'day-card' + (allDone ? ' done' : '');
+  const dn = document.getElementById(`dn-${dayNum}`);
+  if (dn) dn.className = 'day-name' + (allDone ? ' done-text' : '');
+}
+
+function resetAll() {
+  if (!confirm('Reset all progress? This cannot be undone.')) return;
+  localStorage.clear();
+  buildPlan();
+}
+
+buildPlan();
+</script>
+</body>
+</html>
